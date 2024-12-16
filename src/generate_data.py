@@ -58,3 +58,20 @@ class DataGenerator:
         data.columns = [f'X{i+1}' for i in range(self.n_ind_vars)] + ['y_cont', 'y_cat']
 
         return data
+
+
+
+'''
+You can use the above class using sample code like this:
+data_generator = DataGenerator(
+    n_classes_dep_var=2,        # 2 classes for the dependent variable (binary classification)
+    n_ind_vars=5,               # 5 independent variables (features)
+    n_categorical_vars=2,       # 2 of the independent variables will be categorical
+    n_classes_ind_vars=3,       # Categorical variables will have 3 classes (ternary classification)
+    n_samples=100               # Generate 100 samples
+)
+
+# Step 2: Generate the data
+data = data_generator.generate_data()
+
+'''
