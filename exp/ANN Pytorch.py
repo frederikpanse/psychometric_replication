@@ -27,29 +27,8 @@ class ANN(nn.Module):
         #For multiclass classification we use Cross Entropy Loss, for the binary classification case we use Binary Cross Entropy Loss
         self.criterion = nn.CrossEntropyLoss() if nOutput > 1 else nn.BCELoss()
 
-    def load_data_from_csv(file_path):
-        # Load data from csv file, later update so it get it from github url,  
-        df = pd.read_csv(file_path)
-        X = df.iloc[:, :-1].values  # Features (all columns except the last one)
-        y = df.iloc[:, -1].values   # Target (the last column)
-        # Scale features
-        #scaler = StandardScaler()
-        #X = scaler.fit_transform(X)
 
-    # Encode labels if necessary (already binary in this example)
-        le = LabelEncoder()
-        y = le.fit_transform(y)
-
-        X_tensor = torch.tensor(X, dtype=torch.float32)
-        y_tensor = torch.tensor(y, dtype=torch.long)  # For classification
-
-        return X_tensor, y_tensor
-
-        ###   Need to think how to do it with github   ####
-
-
-
-
+    
     def _build_model(self):
         layers = []
         layers.append(nn.Linear(self.nInput, self.nHidden))
@@ -83,15 +62,21 @@ class ANN(nn.Module):
             raise ValueError(f"We didn't add this optimizer to the list: {self.optimizer_type}")
 
 
-    def train(self, train_data, train_labels, epochs=10, batch_size=32):
+    def train(self, X_train, y_train, X_test, y_test, epochs=10, batch_size=32):
         
-        dataset = TensorDataset(train_data, train_labels)
-        train_size = int(len(dataset) * 0.7)  # Use 70% for training
-        test_size = len(dataset) - train_size
-        train_dataset, test_dataset = torch.utils.data.random_split(dataset, [train_size, test_size])
+        # Convert to PyTorch tensors if necessary
+        if not isinstance(X_train, torch.Tensor):
+            X_train = torch.tensor(X_train, dtype=torch.float32)
+        if not isinstance(X_test, torch.Tensor):
+            X_test = torch.tensor(X_test, dtype=torch.float32)
+        if not isinstance(y_train, torch.Tensor):
+            y_train = torch.tensor(y_train.values if hasattr(y_train, 'values') else y_train, dtype=torch.float32 if y_train.ndim == 1 else torch.long)
+        if not isinstance(y_test, torch.Tensor):
+            y_test = torch.tensor(y_test.values if hasattr(y_test, 'values') else y_test, dtype=torch.float32 if y_test.ndim == 1 else torch.long)
 
+        # Create DataLoader for training data
+        train_dataset = TensorDataset(X_train, y_train)
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-        test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
         for epoch in range(epochs):
             self.model.train()
@@ -104,35 +89,27 @@ class ANN(nn.Module):
                 self.optimizer.step()
                 total_loss += loss.item()
 
-            test_loss, test_accuracy = self._evaluate(test_loader)
-            print(f"Epoch {epoch+1}/{epochs} - Loss: {total_loss:.4f} - Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%")
-
-# In the above fucntion, should it divide the dataset now or will we do it before and then this fucntion shoould take train_data and test_data as arguments?
+            test_loss, test_accuracy = self._evaluate(X_test, y_test)
+            print(f"Epoch {epoch + 1}/{epochs} - Loss: {total_loss:.4f} - Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%")
 
 
-    def _evaluate(self, data_loader):
-        # Function used inside train loop to evaluate the performance live during the training
+    def _evaluate(self, X_test, y_test):
+        """
+        Evaluate the model on test data.
+        """
         self.model.eval()
-        total_loss = 0
-        correct = 0
-        total = 0
-
         with torch.no_grad():
-            for inputs, targets in data_loader:
-                outputs = self.model(inputs)
-                total += targets.size(0)
-                if self.nOutput > 1:
-                    loss = self.criterion(outputs, targets)
-                    _, predicted = torch.max(outputs, 1)
-                    correct += (predicted == targets).sum().item()
-                else:
-                    loss = self.criterion(outputs.squeeze(), targets.float())
-                    predicted = (outputs.squeeze() > 0.5).int()
-                    correct += (predicted == targets).sum().item()
-                total_loss += loss.item()
-
-        accuracy = correct / total * 100
-        return total_loss / len(data_loader), accuracy
+            outputs = self.model(X_test)
+            if self.nOutput > 1:
+                loss = self.criterion(outputs, y_test)
+                _, predicted = torch.max(outputs, 1)
+                correct = (predicted == y_test.argmax(dim=1)).sum().item()
+            else:
+                loss = self.criterion(outputs.squeeze(), y_test)
+                predicted = (outputs.squeeze() > 0.5).int()
+                correct = (predicted == y_test).sum().item()
+            accuracy = correct / len(y_test) * 100
+        return loss.item(), accuracy
     
 
     ###### Check A#4 Geiger's functions for test and train, might be better to use them
@@ -172,38 +149,4 @@ class ANN(nn.Module):
         print(f"Model loaded from {save_path}")
 
 
-    ### Testing if the above works ###
-
-    # Example of how to call fucntions
-
-    def test_ann_with_csv(file_path):
-    # Load and preprocess the data
-        X_data, y_data = ANN.load_data_from_csv(file_path)
-            
-            # Define input and output dimensions, hidden layers, activation function, and optimizer
-        nInput = X_data.shape[1]  # Number of features in input data
-        nOutput = len(torch.unique(y_data))  # Number of unique labels in target
-        nLayer = 3  # Number of hidden layers
-        nHidden = 10  # Number of neurons in hidden layers
-        activation_function = nn.ReLU  # Activation function
-        optimizer = 'Adam'  # Optimizer type
-            
-            # Initialize the model
-        model = ANN(nInput=nInput, nOutput=nOutput, nLayer=nLayer, nHidden=nHidden,
-                        activation_function=activation_function, optimizer=optimizer, learning_rate=0.001)
-
-            # Train the model
-        print("Training the model...")
-        model.train(X_data, y_data, epochs=10, batch_size=32)
-
-            # Evaluate the model on test data
-        print("\nEvaluating on test data...")
-        model.evaluate(X_data, y_data)
-
-            # Optionally, you can use sklearn evaluation
-        print("\nSklearn Evaluation...")
-        model.sklearn_evaluation(X_data, y_data)
-
-# Test the model with a CSV file (replace with your actual file path)
-#csv_file_path = "C:/Users/cypri/OneDrive/Desktop/TUB/Research Project - Google/code/first_data.csv"  # Update this path
-#ANN.test_ann_with_csv(csv_file_path)
+   
