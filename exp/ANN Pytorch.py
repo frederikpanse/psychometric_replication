@@ -148,5 +148,28 @@ class ANN(nn.Module):
         self.model.load_state_dict(torch.load(save_path))
         print(f"Model loaded from {save_path}")
 
+'''
+You can use this class for example using the following code
 
-   
+nInput = X_train.shape[1]  # Number of input features
+nOutput = 1  # Binary classification (output is 1 for binary)
+nLayer = 2  # Number of hidden layers
+nHidden = 32  # Number of neurons in each hidden layer
+activation_function = nn.ReLU  # Activation function for hidden layers
+optimizer = 'Adam'  # Optimizer
+learning_rate = 0.001  # Learning rate
+
+# Create the model
+model = ANN(nInput=nInput, nOutput=nOutput, nLayer=nLayer, nHidden=nHidden,
+            activation_function=activation_function, optimizer=optimizer,
+            learning_rate=learning_rate)
+
+# Train the model
+epochs = 20
+batch_size = 32
+model.train(X_train, y_train, X_test, y_test, epochs=epochs, batch_size=batch_size)
+
+# Evaluate the model
+print("\nEvaluating the model:")
+model.sklearn_evaluation(X_test, y_test_)
+'''
