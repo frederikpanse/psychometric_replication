@@ -34,14 +34,22 @@ class DecisionTree:
         probabilities = counts / len(y)
         return -np.sum(p * np.log2(p) for p in probabilities if p > 0)
 
-    def _f_test(self, X, y):
-        """Perform F-test for splitting."""
+    def _f_test(self, X, y, significance_level=0.10):
         unique_classes = np.unique(y)
-        groups = [X[y == c] for c in unique_classes]
-        if len(groups) < 2:  # F-test requires at least two groups
+        groups = [X[y == c].flatten() for c in unique_classes]  # Flatten each group to 1D
+
+    # F-test requires at least two groups with more than one sample
+        if len(groups) < 2 or any(len(group) < 2 for group in groups):
             return 0
-        f_stat, _ = f_oneway(*groups)
-        return f_stat
+
+    # Calculate F-statistic and p-value
+        f_stat, p_value = f_oneway(*groups)
+
+    # Check the significance level
+        if p_value > significance_level:
+            return float('-inf')  # Indicates an unimportant split
+
+        return f_stat  # Return F-statistic if the split is significant
 
     def _split_criterion(self, X_left, X_right, y_left, y_right):
         n_left = len(y_left)
