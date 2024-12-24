@@ -1,6 +1,5 @@
 import numpy as np
 from scipy.stats import f_oneway
-from collections import Counter
 import pickle
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
