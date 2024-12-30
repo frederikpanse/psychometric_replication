@@ -3,10 +3,9 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, TensorDataset
 import os
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
-
 
 
 
@@ -25,7 +24,7 @@ class ANN(nn.Module):
         self.model = self._build_model()
         self.optimizer = self._choose_optimizer()
         #For multiclass classification we use Cross Entropy Loss, for the binary classification case we use Binary Cross Entropy Loss
-        self.criterion = nn.CrossEntropyLoss() if nOutput > 1 else nn.BCELoss()
+        self.criterion = nn.CrossEntropyLoss() if nOutput > 1 else nn.BCEWithLogitsLoss()
 
 
     
@@ -84,7 +83,7 @@ class ANN(nn.Module):
             for inputs, targets in train_loader:
                 self.optimizer.zero_grad()
                 outputs = self.model(inputs)
-                loss = self.criterion(outputs, targets)
+                loss = self.criterion(outputs, targets.unsqueeze(1))
                 loss.backward()
                 self.optimizer.step()
                 total_loss += loss.item()
@@ -112,18 +111,22 @@ class ANN(nn.Module):
         return loss.item(), accuracy
     
 
-    ###### Check A#4 Geiger's functions for test and train, might be better to use them
+    # def evaluate(self, test_data, test_labels):
+    
+    #     test_dataset = TensorDataset(test_data, test_labels)
+    #     test_loader = DataLoader(test_dataset, batch_size=32)
+    #     test_loss, test_accuracy = self._evaluate(test_loader)
+    #     print(f"Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%")
+    #     return test_loss, test_accuracy
 
     def evaluate(self, test_data, test_labels):
+    # Convert to PyTorch tensors if necessary
+        if not isinstance(test_data, torch.Tensor):
+            test_data = torch.tensor(test_data, dtype=torch.float32)
+        if not isinstance(test_labels, torch.Tensor):
+            test_labels = torch.tensor(test_labels, dtype=torch.float32 if test_labels.ndim == 1 else torch.long)
     
-        test_dataset = TensorDataset(test_data, test_labels)
-        test_loader = DataLoader(test_dataset, batch_size=32)
-        test_loss, test_accuracy = self._evaluate(test_loader)
-        print(f"Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%")
-        return test_loss, test_accuracy
-
-    def sklearn_evaluation(self, test_data, test_labels):
-        # Might be a better choice if we want to measure other performance metrics 
+    # Set the model to evaluation mode
         self.model.eval()
         with torch.no_grad():
             outputs = self.model(test_data)
@@ -132,9 +135,11 @@ class ANN(nn.Module):
             else:
                 predicted = (outputs.squeeze() > 0.5).int()
 
-        accuracy = accuracy_score(test_labels, predicted)
-        print(f"Sklearn Accuracy: {accuracy:.4f}")
-        return accuracy
+        accuracy = accuracy_score(test_labels.numpy(), predicted.numpy())
+        precision = precision_score(test_labels.numpy(), predicted.numpy(), average='weighted', zero_division=0)
+        recall = recall_score(test_labels.numpy(), predicted.numpy(), average='weighted', zero_division=0)
+        f1 = f1_score(test_labels.numpy(), predicted.numpy(), average='weighted', zero_division=0)
+        return accuracy, precision, recall, f1
     
 
     def save_model(self, save_path):
