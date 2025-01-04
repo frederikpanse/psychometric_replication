@@ -31,11 +31,11 @@ class ANN(nn.Module):
     def _build_model(self):
         layers = []
         layers.append(nn.Linear(self.nInput, self.nHidden))
-        layers.append(self.activation_function())
+        layers.append(self.activation_function)
        # layers = [nn.Linear(self.nInput, self.nHidden), self.act_fn()]       ## Alternative to layers = []
         for layer in range(self.nLayer - 1):
             layers.append(nn.Linear(self.nHidden, self.nHidden))
-            layers.append(self.activation_function())
+            layers.append(self.activation_function)
         layers.append(nn.Linear(self.nHidden, self.nOutput))
         # Output activation for multi-class classification
         if self.nOutput > 1:
@@ -53,10 +53,10 @@ class ANN(nn.Module):
             return optim.Adam(self.model.parameters(), lr=self.learning_rate)
         elif self.optimizer_type == 'RMSprop':
             return optim.RMSprop(self.model.parameters(), lr=self.learning_rate)
-        elif self.optimizer_type == 'AdaGrad':
-            return optim.Adagrad(self.model.parameters(), lr=self.learning_rate)
-        elif self.optimizer_type == 'AdaDelta':
-            return optim.Adadelta(self.model.parameters(), lr=self.learning_rate)
+        # elif self.optimizer_type == 'AdaGrad':
+        #     return optim.Adagrad(self.model.parameters(), lr=self.learning_rate)
+        # elif self.optimizer_type == 'AdaDelta':
+        #     return optim.Adadelta(self.model.parameters(), lr=self.learning_rate)
         else:
             raise ValueError(f"We didn't add this optimizer to the list: {self.optimizer_type}")
 
@@ -89,7 +89,7 @@ class ANN(nn.Module):
                 total_loss += loss.item()
 
             test_loss, test_accuracy = self._evaluate(X_test, y_test)
-            print(f"Epoch {epoch + 1}/{epochs} - Loss: {total_loss:.4f} - Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%")
+           # print(f"Epoch {epoch + 1}/{epochs} - Loss: {total_loss:.4f} - Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%")
 
 
     def _evaluate(self, X_test, y_test):
