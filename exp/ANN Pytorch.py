@@ -48,11 +48,11 @@ class ANN(nn.Module):
         # Different optimizer options, we can test different if Jeremy says it's a good idea. 
         # Maybe add SGD with Momentum or Nesterov Momentum. Maybe don't test all of them might be too much?
         if self.optimizer_type == 'SGD':
-            return optim.SGD(self.model.parameters(), lr=self.learning_rate, momentum=self.momentum)
+            return optim.SGD(self.model.parameters(), lr=self.learning_rate, momentum=self.momentum,weight_decay=1e-4)
         elif self.optimizer_type == 'Adam':
-            return optim.Adam(self.model.parameters(), lr=self.learning_rate)
+            return optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=1e-4)
         elif self.optimizer_type == 'RMSprop':
-            return optim.RMSprop(self.model.parameters(), lr=self.learning_rate)
+            return optim.RMSprop(self.model.parameters(), lr=self.learning_rate, weight_decay=1e-4)
         # elif self.optimizer_type == 'AdaGrad':
         #     return optim.Adagrad(self.model.parameters(), lr=self.learning_rate)
         # elif self.optimizer_type == 'AdaDelta':
@@ -77,6 +77,10 @@ class ANN(nn.Module):
         train_dataset = TensorDataset(X_train, y_train)
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
+        best_loss = float('inf')
+        patience = 3  # Number of epochs to wait before stopping
+        patience_counter = 0
+        
         for epoch in range(epochs):
             self.model.train()
             total_loss = 0
@@ -89,8 +93,17 @@ class ANN(nn.Module):
                 total_loss += loss.item()
 
             test_loss, test_accuracy = self._evaluate(X_test, y_test)
-           # print(f"Epoch {epoch + 1}/{epochs} - Loss: {total_loss:.4f} - Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%")
+            #print(f"Epoch {epoch + 1}/{epochs} - Loss: {total_loss:.4f} - Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%")
 
+        # Early Stopping Logic
+            if test_loss < best_loss:
+                best_loss = test_loss
+                patience_counter = 0
+            else:
+                patience_counter += 1
+                if patience_counter >= patience:
+                   # print("Early stopping triggered.")
+                    break
 
     def _evaluate(self, X_test, y_test):
         """
