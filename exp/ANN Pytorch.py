@@ -78,7 +78,7 @@ class ANN(nn.Module):
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
         best_loss = float('inf')
-        patience = 3  # Number of epochs to wait before stopping
+        patience = 5  # Number of epochs to wait before stopping
         patience_counter = 0
         
         for epoch in range(epochs):
