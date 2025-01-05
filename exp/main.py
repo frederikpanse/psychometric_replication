@@ -148,7 +148,7 @@ results_list = []
 total_models = len(n_classes_dep_var) * len(n_ind_vars) * len(n_categorical_vars) * len(n_classes_ind_vars) * len(n_samples)
 total_models *= (len(['logit', 'probit']) +  # Logistic Regression
                  len(splitting_criteria) * len(min_samples_leaf_percents) * len(min_samples_split_percents) * 2 +  # Decision Tree and Random Forest
-                 len(nLayer) * len(nHidden) * len(optimizer))  # ANN
+                 len(nLayer) * len(nHidden))  # ANN
 model_count = 0
 
 # Perform 100 iterations
