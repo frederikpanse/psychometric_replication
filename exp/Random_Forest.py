@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from collections import Counter
 import pickle
-from Decision_Tree_works import DecisionTree
+from Decision_Tree import DecisionTree
 
 
 class RandomForest:
