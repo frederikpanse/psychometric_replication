@@ -78,7 +78,7 @@ class ANN(nn.Module):
         train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 
         best_loss = float('inf')
-        patience = 5  # Number of epochs to wait before stopping
+        patience = 3  # Number of epochs to wait before stopping
         patience_counter = 0
         
         for epoch in range(epochs):
@@ -87,7 +87,7 @@ class ANN(nn.Module):
             for inputs, targets in train_loader:
                 self.optimizer.zero_grad()
                 outputs = self.model(inputs)
-                loss = self.criterion(outputs, targets.unsqueeze(1))
+                loss = self.criterion(outputs, targets.long())
                 loss.backward()
                 self.optimizer.step()
                 total_loss += loss.item()
@@ -102,20 +102,19 @@ class ANN(nn.Module):
             else:
                 patience_counter += 1
                 if patience_counter >= patience:
-                   # print("Early stopping triggered.")
+                    #print("Early stopping triggered.")
                     break
 
     def _evaluate(self, X_test, y_test):
-        """
-        Evaluate the model on test data.
-        """
+    
         self.model.eval()
         with torch.no_grad():
             outputs = self.model(X_test)
             if self.nOutput > 1:
-                loss = self.criterion(outputs, y_test)
+            # Convert y_test to LongTensor
+                loss = self.criterion(outputs, y_test.long())
                 _, predicted = torch.max(outputs, 1)
-                correct = (predicted == y_test.argmax(dim=1)).sum().item()
+                correct = (predicted == y_test).sum().item()
             else:
                 loss = self.criterion(outputs.squeeze(), y_test)
                 predicted = (outputs.squeeze() > 0.5).int()
