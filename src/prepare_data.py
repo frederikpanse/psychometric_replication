@@ -22,7 +22,6 @@ class DataPreprocessor:
         X_train, X_test, y_train, y_test = train_test_split(
             X, y_encoded, test_size=self.test_size, random_state=self.random_state, stratify=y if self.stratify else None
         )
-        ### Ask Jeremy if about standardizing and stratification
         # Standardize the features
         X_train_scaled = self.scaler.fit_transform(X_train)  
         X_test_scaled = self.scaler.transform(X_test)  
