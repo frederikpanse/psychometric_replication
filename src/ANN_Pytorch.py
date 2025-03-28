@@ -32,7 +32,6 @@ class ANN(nn.Module):
         layers = []
         layers.append(nn.Linear(self.nInput, self.nHidden))
         layers.append(self.activation_function)
-       # layers = [nn.Linear(self.nInput, self.nHidden), self.act_fn()]       ## Alternative to layers = []
         for layer in range(self.nLayer - 1):
             layers.append(nn.Linear(self.nHidden, self.nHidden))
             layers.append(self.activation_function)
@@ -45,18 +44,13 @@ class ANN(nn.Module):
         return nn.Sequential(*layers)
 
     def _choose_optimizer(self):
-        # Different optimizer options, we can test different if Jeremy says it's a good idea. 
-        # Maybe add SGD with Momentum or Nesterov Momentum. Maybe don't test all of them might be too much?
+        # Different optimizer options 
         if self.optimizer_type == 'SGD':
             return optim.SGD(self.model.parameters(), lr=self.learning_rate, momentum=self.momentum,weight_decay=1e-4)
         elif self.optimizer_type == 'Adam':
             return optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=1e-4)
         elif self.optimizer_type == 'RMSprop':
             return optim.RMSprop(self.model.parameters(), lr=self.learning_rate, weight_decay=1e-4)
-        # elif self.optimizer_type == 'AdaGrad':
-        #     return optim.Adagrad(self.model.parameters(), lr=self.learning_rate)
-        # elif self.optimizer_type == 'AdaDelta':
-        #     return optim.Adadelta(self.model.parameters(), lr=self.learning_rate)
         else:
             raise ValueError(f"We didn't add this optimizer to the list: {self.optimizer_type}")
 
@@ -93,7 +87,7 @@ class ANN(nn.Module):
                 total_loss += loss.item()
 
             test_loss, test_accuracy = self._evaluate(X_test, y_test)
-            #print(f"Epoch {epoch + 1}/{epochs} - Loss: {total_loss:.4f} - Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%")
+            #print(f"Epoch {epoch + 1}/{epochs} - Loss: {total_loss:.4f} - Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%") #Can be used to track the performance
 
         # Early Stopping Logic
             if test_loss < best_loss:
@@ -121,15 +115,7 @@ class ANN(nn.Module):
                 correct = (predicted == y_test).sum().item()
             accuracy = correct / len(y_test) * 100
         return loss.item(), accuracy
-    
 
-    # def evaluate(self, test_data, test_labels):
-    
-    #     test_dataset = TensorDataset(test_data, test_labels)
-    #     test_loader = DataLoader(test_dataset, batch_size=32)
-    #     test_loss, test_accuracy = self._evaluate(test_loader)
-    #     print(f"Test Loss: {test_loss:.4f} - Test Accuracy: {test_accuracy:.2f}%")
-    #     return test_loss, test_accuracy
 
     def evaluate(self, test_data, test_labels):
     # Convert to PyTorch tensors if necessary
@@ -155,7 +141,7 @@ class ANN(nn.Module):
     
 
     def save_model(self, save_path):
-        # Saves model so it can later be reused, change it so it saves it in github folder
+        # Saves model so it can later be reused
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         torch.save(self.model.state_dict(), save_path)
         print(f"Model saved to {save_path}")
