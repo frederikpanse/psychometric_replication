@@ -26,7 +26,7 @@ class LogisticRegression:
         elif self.link_function == "probit":
             return self._probit_cdf(z)
 
-    def fit(self, X, y, learning_rate=0.1, max_iter=1000, tolerance=1e-6): #We use the same learning rate as in ANN, maybe ask Jeremy about it
+    def fit(self, X, y, learning_rate=0.1, max_iter=1000, tolerance=1e-6): #We use the same learning rate as in ANN 
         
         X = np.c_[np.ones(X.shape[0]), X]  # Add intercept term
         n_samples, n_features = X.shape
@@ -59,13 +59,6 @@ class LogisticRegression:
 
             # Update weights
             self.weights -= learning_rate * gradient
-
-        #     # Check for convergence
-        #     if np.linalg.norm(gradient) < tolerance:
-        #         print(f"Converged after {iteration + 1} iterations.")
-        #         break
-        # else:
-        #     print("Gradient descent did not converge within the maximum iterations.")
 
     def predict_proba(self, X):
         
