@@ -1,6 +1,6 @@
-# Research Project: Comparative Simulation Study on Classification Methods at University of Tübingen.
+# Research Project: Replicating a Comparative Simulation Study on Classification Methods at University of Tübingen.
 
-This repository contains code for replicating and slightly extending the simulation study introduced by Kim (2010). The original study compares several classification algorithms: Decision Tree, Logistic Regression, and Artificial Neural Networks (ANNs)—across multiple data-generation scenarios. Here, we replicate this simulation and also include Random Forest as an additional algorithm to test. 
+This repository contains code for replicating and slightly extending the simulation study introduced by Kim (2010). The original study compares several classification algorithms: Decision Tree, Logistic Regression, and Artificial Neural Networks (ANNs)—across multiple data-generation scenarios. Here, we replicate this simulation and also include Random Forest as an additional algorithm to test. Check out the [paper](doc/main.pdf).
 
 ### Original Study
 
